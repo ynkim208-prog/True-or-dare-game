@@ -1,0 +1,8 @@
+{
+  "name": "say-hay-thach-localstorage",
+  "version": "1.2.0",
+  "description": "True or Dare Drinking Game with LocalStorage Persistence",
+  "scripts": {
+    "start": "npx serve public"
+  }
+}
