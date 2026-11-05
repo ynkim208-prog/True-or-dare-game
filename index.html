@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Say Hay Thách - Nhậu True or Dare</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; }
+        .neon-glow { box-shadow: 0 0 20px rgba(139, 92, 246, 0.4), 0 0 40px rgba(59, 130, 246, 0.2); }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between p-4 select-none">
+    <header class="flex justify-between items-center py-3 px-4 bg-slate-950/60 backdrop-blur-md border-b border-slate-800 rounded-2xl gap-2 relative">
+        <h1 class="text-xl font-extrabold bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
+            🍻 Say Hay Thách (Full-Stack)
+        </h1>
+        <div class="flex gap-2">
+            <button onclick="openLibraryModal()" class="bg-slate-800/85 hover:bg-slate-700 text-purple-300 border border-purple-500/30 text-xs px-3 py-1.5 rounded-full font-semibold transition">
+                📜 Kho dữ liệu
+            </button>
+            <button onclick="openModal()" class="bg-slate-800/85 hover:bg-slate-700 text-pink-300 border border-pink-500/30 text-xs px-3 py-1.5 rounded-full font-semibold transition">
+                + Thêm mới
+            </button>
+        </div>
+        <div id="header-toast" class="absolute top-16 left-1/2 -translate-x-1/2 bg-slate-800/95 border border-purple-500/40 text-slate-200 px-4 py-2 rounded-xl shadow-2xl text-xs font-semibold backdrop-blur-md hidden items-center gap-2 z-50 transition-all duration-300">
+            <span id="toast-icon">✨</span>
+            <span id="toast-message">Thông báo hệ thống</span>
+        </div>
+    </header>
+
+    <main class="flex-1 flex flex-col items-center justify-center max-w-md mx-auto w-full my-4">
+        <!-- Setup Screen -->
+        <div id="setup-screen" class="w-full bg-slate-950/80 backdrop-blur-md border border-slate-800 p-6 rounded-2xl shadow-xl">
+            <h2 class="text-lg font-bold mb-4 text-center text-pink-400">Thiết lập bàn nhậu</h2>
+            <div class="mb-4">
+                <label class="block text-xs uppercase tracking-wider text-slate-400 mb-2 font-semibold">Tên người chơi (cách nhau bằng dấu phẩy):</label>
+                <textarea id="player-input" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:border-pink-500 transition text-slate-100" placeholder="An, Bình, Cường, Dung...">An, Bình, Cường, Dung</textarea>
+            </div>
+            <div class="mb-6">
+                <label class="block text-xs uppercase tracking-wider text-slate-400 mb-2 font-semibold">Chọn cấp độ:</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="selectLevel('easy')" id="btn-easy" class="level-btn border border-slate-700 bg-slate-900 py-2 rounded-xl text-xs font-semibold hover:border-pink-500 transition text-slate-300">🌱 Nhẹ nhàng</button>
+                    <button onclick="selectLevel('medium')" id="btn-medium" class="level-btn border border-pink-500 bg-pink-500/10 text-pink-400 py-2 rounded-xl text-xs font-semibold transition">🔥 Bàn nhậu</button>
+                    <button onclick="selectLevel('hard')" id="btn-hard" class="level-btn border border-slate-700 bg-slate-900 py-2 rounded-xl text-xs font-semibold hover:border-pink-500 transition text-slate-300">🌶️ Hardcore</button>
+                </div>
+            </div>
+            <button onclick="startGame()" class="w-full bg-gradient-to-r from-pink-600 to-indigo-600 hover:opacity-90 font-bold py-3 rounded-xl shadow-lg neon-glow transition text-sm text-white">
+                BẮT ĐẦU NHẬU 🍻
+            </button>
+        </div>
+
+        <!-- Gameplay Screen -->
+        <div id="game-screen" class="w-full hidden flex-col items-center">
+            <div class="w-full bg-slate-950/80 backdrop-blur-md border border-slate-800 p-6 rounded-2xl text-center shadow-xl relative overflow-hidden mb-6">
+                <div class="absolute top-2 right-3 text-xs text-slate-400 uppercase tracking-widest font-bold" id="current-level-badge">Bàn nhậu</div>
+                <span class="text-xs text-pink-400 uppercase tracking-widest font-bold">Lượt của</span>
+                <h2 id="current-player-name" class="text-3xl font-extrabold text-white my-2">Tên Người Chơi</h2>
+                <p id="turn-subtitle" class="text-xs text-slate-400">Chọn Thật hay Thách để nhận thử thách!</p>
+            </div>
+
+            <div id="question-card" class="w-full bg-slate-950/80 backdrop-blur-md border border-slate-800 p-6 rounded-2xl mb-6 hidden text-center min-h-[140px] flex flex-col justify-center items-center relative">
+                <span id="q-type-tag" class="text-xs uppercase font-extrabold px-3 py-1 rounded-full mb-3">THẬT</span>
+                <p id="q-content" class="text-base font-medium text-slate-200 mb-4">Nội dung câu hỏi...</p>
+                <div class="flex gap-2 w-full justify-center">
+                    <button onclick="rerollQuestion()" class="bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs px-3 py-1.5 rounded-lg font-semibold transition">🔄 Đổi câu khác</button>
+                    <button onclick="triggerPenalty()" class="bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/30 text-xs px-3 py-1.5 rounded-lg font-semibold transition">❌ Bỏ cuộc (Phạt uống!)</button>
+                </div>
+            </div>
+
+            <div id="choice-buttons" class="grid grid-cols-2 gap-4 w-full mb-4">
+                <button onclick="pickQuestion('truth')" class="bg-blue-600/10 border border-blue-500/40 hover:bg-blue-600/20 font-bold py-4 rounded-xl text-blue-300 text-base shadow-md transition flex flex-col items-center gap-1">
+                    <span>💡 THẬT (TRUTH)</span>
+                </button>
+                <button onclick="pickQuestion('dare')" class="bg-red-600/10 border border-red-500/40 hover:bg-red-600/20 font-bold py-4 rounded-xl text-red-300 text-base shadow-md transition flex flex-col items-center gap-1">
+                    <span>🔥 THÁCH (DARE)</span>
+                </button>
+            </div>
+
+            <button id="next-turn-btn" onclick="nextTurn()" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-xl border border-slate-700 hidden text-sm transition text-slate-200">
+                Lượt tiếp theo ➔
+            </button>
+            <button onclick="resetGame()" class="mt-4 text-xs text-slate-400 hover:text-slate-200 underline">Cài đặt lại từ đầu</button>
+        </div>
+    </main>
+
+    <!-- Modals (Add/Edit & Library & Penalty) -->
+    <div id="custom-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-md p-6 rounded-2xl shadow-2xl">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-800">
+                <h3 class="font-bold text-pink-400 text-base" id="modal-title">Thêm mới</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-100 font-bold text-lg">&times;</button>
+            </div>
+            <div class="flex gap-2 mb-4" id="cat-mode-tabs">
+                <button onclick="switchCategoryMode('question')" id="tab-cat-q" class="flex-1 py-1.5 rounded-lg text-xs font-semibold bg-pink-500/20 border border-pink-500 text-pink-300">🎯 Câu hỏi</button>
+                <button onclick="switchCategoryMode('penalty')" id="tab-cat-p" class="flex-1 py-1.5 rounded-lg text-xs font-semibold bg-slate-950 border border-slate-800 text-slate-400">🥃 Hình phạt</button>
+            </div>
+            <!-- Form content omitted for brevity in snippet, full code in zip -->
+            <div id="form-question-section" class="space-y-4">
+                <input type="hidden" id="edit-id" value="">
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1 font-semibold">Cấp độ:</label>
+                    <select id="modal-level" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-sm text-slate-100">
+                        <option value="easy">Nhẹ nhàng</option>
+                        <option value="medium" selected>Bàn nhậu</option>
+                        <option value="hard">Hardcore</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1 font-semibold">Nội dung:</label>
+                    <textarea id="modal-content" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-100" placeholder="Nhập nội dung..."></textarea>
+                </div>
+                <button onclick="saveQuestionToBE()" class="w-full bg-pink-600 hover:bg-pink-500 font-bold py-3 rounded-xl text-sm text-white">Lưu qua API Backend</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showNotification(msg, icon="✨") {
+            const toast = document.getElementById('header-toast');
+            document.getElementById('toast-message').innerText = msg;
+            document.getElementById('toast-icon').innerText = icon;
+            toast.classList.remove('hidden'); toast.classList.add('flex');
+            setTimeout(() => { toast.classList.remove('flex'); toast.classList.add('hidden'); }, 3000);
+        }
+        async function fetchBackendData() {
+            try {
+                const res = await fetch('/api/data');
+                const data = await res.json();
+                return data;
+            } catch(e) {
+                showNotification('Đang dùng chế độ offline local', '⚠️');
+                return null;
+            }
+        }
+        function startGame() {
+            const val = document.getElementById('player-input').value.trim();
+            if(!val) { showNotification('Nhập tên người chơi!', '⚠️'); return; }
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('game-screen').classList.add('flex');
+            showNotification('Bắt đầu game thành công!', '🍻');
+        }
+        function openModal() { document.getElementById('custom-modal').classList.remove('hidden'); document.getElementById('custom-modal').classList.add('flex'); }
+        function closeModal() { document.getElementById('custom-modal').classList.remove('flex'); document.getElementById('custom-modal').classList.add('hidden'); }
+        async function saveQuestionToBE() {
+            const content = document.getElementById('modal-content').value;
+            const level = document.getElementById('modal-level').value;
+            await fetch('/api/data', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({type: 'question', level, content})
+            });
+            showNotification('Đã lưu dữ liệu lên Backend Vercel!', '✅');
+            closeModal();
+        }
+    </script>
+</body>
+</html>
